@@ -14,7 +14,7 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "AutoDeskAI",
+  title: "hurAI",
   description: "AI-powered helpdesk ticket generation",
 };
 

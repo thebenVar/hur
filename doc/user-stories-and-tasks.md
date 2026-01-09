@@ -1,8 +1,8 @@
-# HUR: User Stories and Development Tasks
+# hurAI: User Stories and Development Tasks
 
 **Document Version:** 1.0  
 **Date:** November 26, 2025  
-**Project:** HUR (Helpdesk with a Unified Response)
+**Project:** hurAI (Helpdesk with a Unified Response)
 
 ---
 
@@ -91,6 +91,24 @@ Implement essential security measures for POC deployment.
 - Original message linked to ticket
 
 **Priority:** P0 (Must Have - POC)
+
+---
+
+#### US-1.4: Attach Message to Existing Ticket
+**As a** support agent
+**I want to** attach a new message to an existing ticket
+**So that** I can consolidate follow-up communications
+
+**Acceptance Criteria:**
+- "Attach to Ticket" option on each message
+- System suggests candidate tickets based on:
+    - Sender match
+    - Ticket ID in message
+    - Topic/Keyword match
+- Search/Select manually if suggestion is wrong
+- Message added to ticket activity log
+
+**Priority:** P1 (Should Have - POC)
 
 ---
 

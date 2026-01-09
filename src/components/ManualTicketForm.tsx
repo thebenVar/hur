@@ -1,9 +1,8 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { TicketData } from "./TicketDashboard";
 import {
-    X,
     Save,
     Monitor,
     AppWindow,
@@ -13,7 +12,6 @@ import {
     GraduationCap,
     Truck,
     Tag,
-    Star,
     Clock,
     User,
     MessageCircle,
@@ -22,7 +20,6 @@ import {
     Users
 } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { motion } from "framer-motion";
 
 interface ManualTicketFormProps {
     onSubmit: (data: TicketData) => void;
@@ -30,13 +27,13 @@ interface ManualTicketFormProps {
     initialData?: {
         contact?: string;
         summary?: string;
-        source?: "phone" | "email" | "whatsapp" | "in-person" | "other";
+        source?: "phone" | "email" | "whatsapp" | "in-person" | "screen-share" | "other";
     };
 }
 
 export function ManualTicketForm({ onSubmit, onCancel, initialData }: ManualTicketFormProps) {
-    const [formData, setFormData] = useState<Partial<TicketData>>({
-        id: "INC-PENDING", // Stable initial value to prevent hydration mismatch
+    const [formData, setFormData] = useState<Partial<TicketData>>(() => ({
+        id: `INC-${new Date().getFullYear()}-${Math.floor(Math.random() * 10000)}`,
         contact: initialData?.contact || "",
         source: initialData?.source || "phone",
         duration: "0m 0s",
@@ -51,17 +48,8 @@ export function ManualTicketForm({ onSubmit, onCancel, initialData }: ManualTick
         status: "open",
         category: "other",
         timeSpent: "0m",
-        activityLog: [],
-        kbMatches: []
-    });
-
-    // Generate ID on client side only
-    useEffect(() => {
-        setFormData(prev => ({
-            ...prev,
-            id: `INC-${new Date().getFullYear()}-${Math.floor(Math.random() * 10000)}`
-        }));
-    }, []);
+        activityLog: []
+    }));
 
     const [tempIssues, setTempIssues] = useState("");
     const [tempCauses, setTempCauses] = useState("");
@@ -76,7 +64,7 @@ export function ManualTicketForm({ onSubmit, onCancel, initialData }: ManualTick
         const finalData: TicketData = {
             id: formData.id || "INC-UNKNOWN",
             contact: formData.contact || "Unknown Contact",
-            source: formData.source as any || "other",
+            source: (formData.source || "other") as TicketData['source'],
             duration: formData.duration || "0m 0s",
             topic: formData.topic || "General Inquiry",
             sentiment: formData.sentiment as "positive" | "neutral" | "negative",
@@ -91,11 +79,10 @@ export function ManualTicketForm({ onSubmit, onCancel, initialData }: ManualTick
                 isNextAction: false
             })),
             assignee: formData.assignee || "Unassigned",
-            status: formData.status as any || "open",
-            category: formData.category as any || "other",
+            status: formData.status || "open",
+            category: formData.category || "other",
             timeSpent: formData.timeSpent || "0m",
-            activityLog: [],
-            kbMatches: []
+            activityLog: []
         };
 
         onSubmit(finalData);
@@ -128,7 +115,7 @@ export function ManualTicketForm({ onSubmit, onCancel, initialData }: ManualTick
                                     <button
                                         key={s}
                                         type="button"
-                                        onClick={() => setFormData({ ...formData, status: s as any })}
+                                        onClick={() => setFormData({ ...formData, status: s as TicketData['status'] })}
                                         className={cn(
                                             "px-3 py-1.5 rounded-lg text-xs font-medium capitalize border transition-all",
                                             formData.status === s
@@ -150,7 +137,7 @@ export function ManualTicketForm({ onSubmit, onCancel, initialData }: ManualTick
                                     <button
                                         key={p}
                                         type="button"
-                                        onClick={() => setFormData({ ...formData, priority: p as any })}
+                                        onClick={() => setFormData({ ...formData, priority: p as TicketData['priority'] })}
                                         className={cn(
                                             "flex-1 py-1.5 rounded-lg text-xs font-medium capitalize transition-all",
                                             formData.priority === p
@@ -170,11 +157,11 @@ export function ManualTicketForm({ onSubmit, onCancel, initialData }: ManualTick
                         <div className="space-y-3">
                             <label className="text-xs font-semibold text-slate-500 uppercase tracking-wider">Customer Sentiment</label>
                             <div className="flex items-center justify-between bg-white p-3 rounded-xl border border-slate-200">
-                                {["negative", "neutral", "positive"].map((s, idx) => (
+                                {["negative", "neutral", "positive"].map((s) => (
                                     <button
                                         key={s}
                                         type="button"
-                                        onClick={() => setFormData({ ...formData, sentiment: s as any })}
+                                        onClick={() => setFormData({ ...formData, sentiment: s as TicketData['sentiment'] })}
                                         className={cn(
                                             "p-2 rounded-full transition-all hover:scale-110",
                                             formData.sentiment === s
@@ -262,7 +249,7 @@ export function ManualTicketForm({ onSubmit, onCancel, initialData }: ManualTick
                                     <button
                                         key={src}
                                         type="button"
-                                        onClick={() => setFormData({ ...formData, source: src as any })}
+                                        onClick={() => setFormData({ ...formData, source: src as TicketData['source'] })}
                                         className={cn(
                                             "flex-1 py-3 rounded-xl border transition-all flex items-center justify-center",
                                             formData.source === src
@@ -289,7 +276,7 @@ export function ManualTicketForm({ onSubmit, onCancel, initialData }: ManualTick
                                 <button
                                     key={cat.id}
                                     type="button"
-                                    onClick={() => setFormData({ ...formData, category: cat.id as any })}
+                                    onClick={() => setFormData({ ...formData, category: cat.id as TicketData['category'] })}
                                     className={cn(
                                         "flex flex-col items-center gap-2 p-4 rounded-2xl border transition-all hover:scale-[1.02]",
                                         formData.category === cat.id

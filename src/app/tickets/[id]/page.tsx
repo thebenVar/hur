@@ -1,9 +1,10 @@
 "use client";
 
 import { useParams } from "next/navigation";
+import { useState } from "react";
 import Link from "next/link";
 import { ArrowLeft } from "lucide-react";
-import { TicketDashboard, TicketData } from "@/components/TicketDashboard";
+import { TicketDashboard, type TicketData } from "@/components/TicketDashboard";
 
 // Mock data generator based on ID
 const getMockTicketData = (id: string): TicketData => {
@@ -50,24 +51,6 @@ const getMockTicketData = (id: string): TicketData => {
                 timestamp: "15m ago",
                 author: "System"
             }
-        ],
-        kbMatches: [
-            {
-                id: "kb-1",
-                title: "Troubleshooting TM Sync Issues",
-                excerpt: "Common steps to resolve translation memory synchronization failures...",
-                relevance: 95,
-                url: "#",
-                source: "help_system"
-            },
-            {
-                id: "kb-2",
-                title: "Network Connectivity Guide",
-                excerpt: "How to diagnose and fix network issues affecting tool connectivity...",
-                relevance: 80,
-                url: "#",
-                source: "documentation"
-            }
         ]
     };
 };
@@ -75,7 +58,7 @@ const getMockTicketData = (id: string): TicketData => {
 export default function TicketDetailsPage() {
     const params = useParams();
     const id = params.id as string;
-    const ticketData = getMockTicketData(id);
+    const [ticketData, setTicketData] = useState<TicketData>(() => getMockTicketData(id));
 
     return (
         <div className="min-h-screen bg-slate-50/50 p-8">
@@ -88,7 +71,10 @@ export default function TicketDetailsPage() {
                     Back to All Tickets
                 </Link>
 
-                <TicketDashboard data={ticketData} />
+                <TicketDashboard 
+                    data={ticketData}
+                    onUpdateData={setTicketData}
+                />
             </div>
         </div>
     );

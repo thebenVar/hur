@@ -29,6 +29,7 @@ export interface ActivityItem {
         fileType?: string;
         oldStatus?: string;
         newStatus?: string;
+        actionsDetected?: number;
     };
 }
 
@@ -87,7 +88,7 @@ export function TicketActivity({ activities, onAddActivity }: TicketActivityProp
                     {/* Vertical Line */}
                     <div className="absolute left-5 top-0 bottom-0 w-px bg-slate-200" />
 
-                    {activities.map((activity, index) => (
+                    {activities.map((activity) => (
                         <div key={activity.id} className="relative pl-12 mb-8 last:mb-0 group">
                             {/* Icon Bubble */}
                             <div className={cn(

@@ -1,13 +1,14 @@
 "use client";
 
-import { useState, useEffect, Suspense } from "react";
+import { useState, Suspense } from "react";
 import { useSearchParams } from "next/navigation";
 import { AudioUploader } from "@/components/AudioUploader";
 import { AnalysisLoader } from "@/components/AnalysisLoader";
 import { TicketDashboard, type TicketData } from "@/components/TicketDashboard";
 import { ManualTicketForm } from "@/components/ManualTicketForm";
 import { LiveCallAssistant } from "@/components/LiveCallAssistant";
-import { Headset, Sparkles, PenLine, Mic } from "lucide-react";
+import { ScreenShareAssistant } from "@/components/ScreenShareAssistant";
+import { Headset, PenLine, Mic, MonitorPlay } from "lucide-react";
 
 // Mock data for the experiment
 const MOCK_TICKET_DATA: TicketData = {
@@ -69,52 +70,23 @@ const MOCK_TICKET_DATA: TicketData = {
             timestamp: "Today, 10:30 AM",
             content: "I'm investigating the SSO configuration now. It looks like a certificate mismatch."
         }
-    ],
-    kbMatches: [
-        {
-            id: "kb-1",
-            title: "Configuring SSO with Azure AD",
-            excerpt: "Step-by-step guide to setting up Single Sign-On using Azure Active Directory, including certificate management.",
-            source: "documentation",
-            url: "#",
-            relevance: 95
-        },
-        {
-            id: "kb-2",
-            title: "Ticket #402: SSO Login Failure",
-            excerpt: "Resolved issue where expired certificates caused 503 errors during login flow.",
-            source: "previous_ticket",
-            url: "#",
-            relevance: 88
-        },
-        {
-            id: "kb-3",
-            title: "Community: Best practices for auth certificates",
-            excerpt: "Discussion on how to rotate certificates without downtime.",
-            source: "forum",
-            url: "#",
-            relevance: 72
-        }
     ]
 };
 
 function CreateTicketContent() {
     const searchParams = useSearchParams();
-    const [viewState, setViewState] = useState<"selection" | "upload" | "processing" | "result" | "manual-entry" | "live-call">("selection");
+    const [viewState, setViewState] = useState<"selection" | "upload" | "processing" | "result" | "manual-entry" | "live-call" | "screen-share">(() => {
+        return searchParams.get("view") === "manual-entry" ? "manual-entry" : "selection";
+    });
     const [ticketData, setTicketData] = useState<TicketData | null>(null);
 
     // Pre-fill data from URL params
     const initialContact = searchParams.get("contact") || "";
     const initialDescription = searchParams.get("description") || "";
-    const initialSource = searchParams.get("source") as any || "phone";
-
-    useEffect(() => {
-        if (searchParams.get("view") === "manual-entry") {
-            setViewState("manual-entry");
-        }
-    }, [searchParams]);
+    const initialSource = searchParams.get("source") as TicketData['source'] || "phone";
 
     const handleFileSelect = (file: File) => {
+        console.log("File selected:", file.name);
         setViewState("processing");
     };
 
@@ -133,6 +105,11 @@ function CreateTicketContent() {
         setViewState("result");
     };
 
+    const handleScreenShareComplete = (data: TicketData) => {
+        setTicketData(data);
+        setViewState("result");
+    };
+
     return (
         <div className="max-w-5xl mx-auto">
             <div className="mb-8">
@@ -143,7 +120,7 @@ function CreateTicketContent() {
             <div className="relative min-h-[400px]">
                 {viewState === "selection" && (
                     <div className="animate-in fade-in zoom-in-95 duration-500">
-                        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
                             {/* Upload Option */}
                             <button
                                 onClick={() => setViewState("upload")}
@@ -172,6 +149,22 @@ function CreateTicketContent() {
                                     <h3 className="text-lg font-bold text-slate-900 mb-2">Start Live Call</h3>
                                     <p className="text-sm text-slate-500 leading-relaxed">
                                         Real-time transcription and AI assistance during the call.
+                                    </p>
+                                </div>
+                            </button>
+
+                            {/* Screen Share Option - NEW */}
+                            <button
+                                onClick={() => setViewState("screen-share")}
+                                className="group flex flex-col items-center gap-6 p-8 bg-white rounded-3xl border-2 border-dashed border-slate-200 hover:border-emerald-500 hover:bg-emerald-50/50 transition-all duration-300 text-center h-full"
+                            >
+                                <div className="h-16 w-16 rounded-full bg-emerald-50 text-emerald-600 flex items-center justify-center group-hover:scale-110 transition-transform">
+                                    <MonitorPlay className="h-8 w-8" />
+                                </div>
+                                <div>
+                                    <h3 className="text-lg font-bold text-slate-900 mb-2">Screen Share Session</h3>
+                                    <p className="text-sm text-slate-500 leading-relaxed">
+                                        Capture screen activity and AI-detected issues in real-time.
                                     </p>
                                 </div>
                             </button>
@@ -242,6 +235,21 @@ function CreateTicketContent() {
                     </div>
                 )}
 
+                {viewState === "screen-share" && (
+                    <div className="animate-in fade-in zoom-in-95 duration-500 space-y-6">
+                        <button
+                            onClick={() => setViewState("selection")}
+                            className="text-sm text-slate-500 hover:text-slate-900 flex items-center gap-2"
+                        >
+                            ← Back to options
+                        </button>
+                        <ScreenShareAssistant
+                            onComplete={handleScreenShareComplete}
+                            onCancel={() => setViewState("selection")}
+                        />
+                    </div>
+                )}
+
                 {viewState === "processing" && (
                     <div className="animate-in fade-in zoom-in-95 duration-500">
                         <AnalysisLoader onComplete={handleProcessingComplete} />
@@ -261,7 +269,10 @@ function CreateTicketContent() {
                                 Create Another Ticket
                             </button>
                         </div>
-                        <TicketDashboard data={ticketData} />
+                        <TicketDashboard 
+                            data={ticketData} 
+                            onUpdateData={(updatedData) => setTicketData(updatedData)}
+                        />
                     </div>
                 )}
             </div>
